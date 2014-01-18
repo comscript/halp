@@ -1,8 +1,10 @@
 import platform
 import fnmatch
 import os
+import string
+import sys
 
-distros = ['linux','ubuntu','debian','opensuse','arch','pclinuxos',
+allDistros = ['linuxmint','ubuntu','debian','opensuse','arch','pclinuxos',
     'centos','mageia','slackware','crunchbang']
 
 def isLinux():
@@ -20,18 +22,16 @@ def getBits():
   else:
     return 64
 
-def getDistro():
-  #lsb-release distros
-  try:
-    for file in os.listdir('/etc/'):
-      if fnmatch.fnmatch(file, '*-release'):
-        with open(file,'r') as f:
-          data = f.read()
-          data = string.lower(distroData)
-          data = data.replaceAll("\\s+","")
-          for distro in distros: 
-            if data.find(distro) != -1:
-              return distro
-  return None
-
+def getDistros():
+  distros = []
+  for file in os.listdir('/etc/'):
+    if file.find('release') != -1:
+      with open('/etc/'+file,'r') as f:
+        data = f.read()
+        data = string.lower(data)
+        data = data.replace("\\s+","")
+        for distro in allDistros:
+          if data.find(distro) != -1:
+            distros.append(distro)
+  return distros
 
