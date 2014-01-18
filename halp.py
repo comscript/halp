@@ -6,7 +6,9 @@ PENGUIN_X = 507.0
 PENGUIN_Y = 650.0
 SPEECH_X = 434.0
 SPEECH_Y = 394.0
-
+TEXT_X = 336.0
+TEXT_Y = 280.0
+CORNER = 20.0
 
 class Penguin(gtk.Window):
     def __init__(self):
@@ -67,7 +69,19 @@ class Penguin(gtk.Window):
         self.options.set_app_paintable(True)
         self.options.connect('expose-event', self.draw_options)
         self.options.set_decorated(False)
+        self.optionsbox = gtk.Window(gtk.WINDOW_POPUP)
+        self.optionsbox.resize(int(TEXT_X/2), int(TEXT_Y/2))
+        self.optionsbox.move(gtk.gdk.screen_width() - width - self.width+int(CORNER/2), gtk.gdk.screen_height() - height -self.height+int(CORNER/2))
+        self.optionsbox.set_app_paintable(True)
+        self.optionsbox.set_colormap(rgba)
+        self.optionsbox.set_decorated(False)
+        
+        text = gtk.TextView()
+        text.set_size_request(50,50)
+        text.get_buffer().set_text("Hello World!")
+        self.optionsbox.add(text)
         self.options.show_all()
+        self.optionsbox.show_all()
         
     def click_handler(self, widget, event):
         if self.options:
@@ -80,8 +94,10 @@ class Penguin(gtk.Window):
         if event.changed_mask & gtk.gdk.WINDOW_STATE_ICONIFIED:
             if event.new_window_state & gtk.gdk.WINDOW_STATE_ICONIFIED and self.options:
                 self.options.hide()
+                self.optionsbox.hide()
             elif self.options:
                 self.options.show()
+                self.optionsbox.show()
     
 if os.geteuid() != 0:
     exit("I need root permissions!")
