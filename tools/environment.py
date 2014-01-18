@@ -16,7 +16,7 @@ allDistros = {
 'mageia':'urpmi',
 'redhat':'yum',
 'fedora':'yum',
-'slackware':'slackpkg',
+'slackware':'pkgtools',
 'crunchbang':'apt'
 }
 
@@ -70,7 +70,7 @@ def isInstalled(package):
           break
         if line.find("Package: ") != -1:
           return True
-    elif manager == 'yum' or manager == 'zypper':
+    elif manager == 'yum' or manager == 'zypper' or manager == 'urpmi':
       p = subprocess.Popen(
           ["sudo","rpm","-q", package],
           stdin = subprocess.PIPE,
