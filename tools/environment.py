@@ -58,12 +58,7 @@ def getPMSCandidates():
 def isInstalled(package):
   for manager in getPMSCandidates():
     if manager == 'apt':
-      p = subprocess.Popen(
-          ["sudo","dpkg","-s",package],
-          stdin = subprocess.PIPE,
-          stdout = subprocess.PIPE,
-          stderr = subprocess.PIPE
-          )
+      p = newProcess(["dpkg","-s",package])
       while p:
         line = p.stdout.readline()
         if not line:
@@ -71,12 +66,7 @@ def isInstalled(package):
         if line.find("Package: ") != -1:
           return True
     elif manager == 'yum' or manager == 'zypper' or manager == 'urpmi':
-      p = subprocess.Popen(
-          ["sudo","rpm","-q", package],
-          stdin = subprocess.PIPE,
-          stdout = subprocess.PIPE,
-          stderr= subprocess.PIPE
-          )
+      p = newProcess(["rpm","-q", package])
       installed = True
       while p:
         line = p.stdout.readline()
@@ -90,4 +80,39 @@ def isInstalled(package):
   return False
 
 
+def install(package,password):
+  for manager in getPMSCandidates():
+    if manager == 'apt':
+      p = newProcess(['sudo','-S','apt-get','install','-y',package])
+    elif manager == 'yum':
+      p = newProcess(['sudo','-S','yum','install','-y',package])
+    data = p.communicate(password)
+    if p.poll() != 0:
+      print data[1]
+      return False
+  print data[0]
+  return True
+
+
+def remove(package,password):
+  for manager in getPMSCandidates():
+    if manager == 'apt':
+      p = newProcess(['sudo','-S','apt-get','remove','-y',package])
+    elif manager == 'yum':
+      p = newProcess(['sudo','-S','yum','remove','-y',package])
+    data = p.communicate(password)
+    if p.poll() != 0:
+      print data[1]
+      return False
+    print data[0]
+    return True
+
+
+
+def newProcess(args):
+  return subprocess.Popen(args,
+      stdin = subprocess.PIPE,
+      stdout = subprocess.PIPE,
+      stderr = subprocess.PIPE
+      )
 
