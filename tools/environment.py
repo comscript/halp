@@ -81,7 +81,7 @@ def isInstalled(package):
         line = p.stdout.readline()
         if not line:
           break
-        if line.size > 0:
+        if len(line) > 0:
           return True
 
   return False
