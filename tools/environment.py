@@ -72,17 +72,20 @@ def isInstalled(package):
           return True
     elif manager == 'yum' or manager == 'zypper':
       p = subprocess.Popen(
-          ["sudo","rpm","-qa", "|", "grep", package],
+          ["sudo","rpm","-q", package],
           stdin = subprocess.PIPE,
           stdout = subprocess.PIPE,
           stderr= subprocess.PIPE
           )
+      installed = True
       while p:
         line = p.stdout.readline()
         if not line:
           break
-        if len(line) > 0:
-          return True
+        if line.find('not installed') != -1:
+          installed = False
+      if installed:
+        return True
 
   return False
 
