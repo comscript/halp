@@ -2,43 +2,90 @@
 
 import os,gtk, math, cairo, rsvg
 
-IMG_X = 507.0
-IMG_Y = 650.0
+PENGUIN_X = 507.0
+PENGUIN_Y = 650.0
+SPEECH_X = 434.0
+SPEECH_Y = 394.0
 
+
+class Penguin(gtk.Window):
+    def __init__(self):
+        super(Penguin, self).__init__()
+        self.resize(int(PENGUIN_X/6), int(PENGUIN_Y/6))
+        self.set_gravity(gtk.gdk.GRAVITY_SOUTH_EAST)
+        self.width, self.height = self.get_size()
+        self.move(gtk.gdk.screen_width() - self.width, gtk.gdk.screen_height() - self.height)
+        screen = self.get_screen()
+        rgba = screen.get_rgba_colormap()
+        self.set_colormap(rgba)
+        self.set_app_paintable(True)
+        self.connect('expose-event', self.draw_penguin)
+        self.set_decorated(False)
+        self.connect("destroy", gtk.main_quit)
+        self.add_events(gtk.gdk.BUTTON_PRESS_MASK)
+        self.connect("button-press-event", self.click_handler)
+        self.connect('window-state-event', self.window_state_event_handler)
+        self.show_all()
+        self.create_options()
+        
+    def draw_penguin(self, widget, event):
+        cr = widget.window.cairo_create()
+        # Sets the operator to clear which deletes everything below where an object is drawn
+        cr.set_operator(cairo.OPERATOR_CLEAR)
+        # Makes the mask fill the entire window
+        cr.rectangle(0.0, 0.0, *widget.get_size())
+        # Deletes everything in the window (since the compositing operator is clear and mask fills the entire window
+        cr.fill()
+        # Set the compositing operator back to the default
+        cr.set_operator(cairo.OPERATOR_OVER)
+
+        svg = rsvg.Handle(file="assets/penguin.svg")
+        scalef = widget.get_size()[0]/PENGUIN_X
+        cr.scale(scalef, scalef)
+        svg.render_cairo(cr)
+       
+    def draw_options(self, widget, event):
+        cr = widget.window.cairo_create()
+        cr.set_operator(cairo.OPERATOR_CLEAR)
+        cr.rectangle(0.0,0.0, *widget.get_size())
+        cr.fill()
+        cr.set_operator(cairo.OPERATOR_OVER)
+        svg = rsvg.Handle(file="assets/speech.svg")
+        scalef = widget.get_size()[0]/SPEECH_X
+        cr.scale(scalef, scalef)
+        svg.render_cairo(cr)
+   
+    def create_options(self):
+        self.options = gtk.Window(gtk.WINDOW_POPUP)
+        self.options.resize(int(SPEECH_X/2), int(SPEECH_Y/2))
+        self.options.set_gravity(gtk.gdk.GRAVITY_SOUTH_EAST)
+        width, height = self.options.get_size()
+        self.options.move(gtk.gdk.screen_width() - width - self.width, gtk.gdk.screen_height() - height -self.height) 
+        screen = self.options.get_screen()
+        rgba = screen.get_rgba_colormap()
+        self.options.set_colormap(rgba)
+        self.options.set_app_paintable(True)
+        self.options.connect('expose-event', self.draw_options)
+        self.options.set_decorated(False)
+        self.options.show_all()
+        
+    def click_handler(self, widget, event):
+        if self.options:
+            self.options.destroy()
+            self.options = None
+        else:
+            self.create_options()
+
+    def window_state_event_handler(self, widget, event):
+        if event.changed_mask & gtk.gdk.WINDOW_STATE_ICONIFIED:
+            if event.new_window_state & gtk.gdk.WINDOW_STATE_ICONIFIED and self.options:
+                self.options.hide()
+            elif self.options:
+                self.options.show()
+    
 if os.geteuid() != 0:
     exit("I need root permissions!")
 
-def expose(widget, event):
-    cr = widget.window.cairo_create()
-
-    # Sets the operator to clear which deletes everything below where an object is drawn
-    cr.set_operator(cairo.OPERATOR_CLEAR)
-    # Makes the mask fill the entire window
-    cr.rectangle(0.0, 0.0, *widget.get_size())
-    # Deletes everything in the window (since the compositing operator is clear and mask fills the entire window
-    cr.fill()
-    # Set the compositing operator back to the default
-    cr.set_operator(cairo.OPERATOR_OVER)
-
-    svg = rsvg.Handle(file="assets/penguin.svg")
-    scalef = widget.get_size()[0]/IMG_X
-    cr.scale(scalef, scalef)
-    svg.render_cairo(cr)
-
-if __name__ == "__main__":
-    window = gtk.Window()
-    window.resize(int(IMG_X/6), int(IMG_Y/6))
-    window.set_gravity(gtk.gdk.GRAVITY_SOUTH_EAST)
-    width, height = window.get_size()
-    window.move(gtk.gdk.screen_width() - width, gtk.gdk.screen_height() - height)
-    screen = window.get_screen()
-    rgba = screen.get_rgba_colormap()
-    window.set_colormap(rgba)
-    window.set_app_paintable(True)
-    window.connect('expose-event', expose)
-    window.set_decorated(False)
-    window.connect("destroy", gtk.main_quit)
-    window.show_all()
-
-    gtk.main()
+penguin = Penguin() #create_penguin()
+gtk.main()
 
