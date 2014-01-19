@@ -28,7 +28,9 @@ class Penguin(gtk.Window):
         self.connect("button-press-event", self.click_handler)
         self.connect('window-state-event', self.window_state_event_handler)
         self.show_all()
-        self.create_options()
+        self.create_options_bubble()
+        self.alert = None
+        self.create_alert("Welcome! Click on me if you need any HALP! :)")
         
     def draw_penguin(self, widget, event):
         cr = widget.window.cairo_create()
@@ -57,7 +59,7 @@ class Penguin(gtk.Window):
         cr.scale(scalef, scalef)
         svg.render_cairo(cr)
    
-    def create_options(self):
+    def create_options_bubble(self):
         self.options = gtk.Window(gtk.WINDOW_POPUP)
         self.options.resize(int(SPEECH_X/2), int(SPEECH_Y/2))
         self.options.set_gravity(gtk.gdk.GRAVITY_SOUTH_EAST)
@@ -75,20 +77,36 @@ class Penguin(gtk.Window):
         self.optionsbox.set_app_paintable(True)
         self.optionsbox.set_colormap(rgba)
         self.optionsbox.set_decorated(False)
-        
-        text = gtk.TextView()
-        text.set_size_request(50,50)
-        text.get_buffer().set_text("Hello World!")
-        self.optionsbox.add(text)
+        self.optionsbox.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#ffffff'))
         self.options.show_all()
         self.optionsbox.show_all()
-        
+
+    def create_alert(self, text):
+        self.alert = gtk.TextView()
+        self.alert.set_wrap_mode(gtk.WRAP_WORD)
+        self.alert.get_buffer().set_text(text)
+        self.alert.connect('button-press-event', self.dismiss_alert)
+        self.optionsbox.add(self.alert)
+        self.optionsbox.show_all()
+     
+    def dismiss_alert(self, widget, event):
+        self.options.destroy()
+        self.optionsbox.destroy()
+        self.alert = None
+        self.optionsbox = None
+        self.options = None
+        return True
+
     def click_handler(self, widget, event):
         if self.options:
             self.options.destroy()
             self.options = None
+            self.optionsbox.destroy()
+            self.optionsbox = None
+            if self.alert:
+                self.alert = None
         else:
-            self.create_options()
+            self.create_options_bubble()
 
     def window_state_event_handler(self, widget, event):
         if event.changed_mask & gtk.gdk.WINDOW_STATE_ICONIFIED:
@@ -98,9 +116,6 @@ class Penguin(gtk.Window):
             elif self.options:
                 self.options.show()
                 self.optionsbox.show()
-    
-if os.geteuid() != 0:
-    exit("I need root permissions!")
 
 penguin = Penguin() #create_penguin()
 gtk.main()
