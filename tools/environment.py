@@ -55,6 +55,9 @@ def getPMSCandidates():
     managers.append(allDistros[distro])
   return list(set(managers))
 
+def viewAsRoot(path):
+  subprocess.Popen(["gksudo","xdg-open",path])
+
 def isInstalled(package):
   for manager in getPMSCandidates():
     if manager == 'apt':
