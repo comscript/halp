@@ -9,6 +9,18 @@ SPEECH_Y = 394.0
 TEXT_X = 336.0
 TEXT_Y = 280.0
 CORNER = 20.0
+SCROLL_OFFSET = 20
+    
+def create_button(text, callback=None):
+    button = gtk.Button(text)
+    button.props.relief = gtk.RELIEF_NONE
+    if callback:
+        button.connect('button-press-event', callback)
+    eb = gtk.EventBox()
+    eb.add(button)
+    eb.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse("white"))
+    return eb
+
 
 class Penguin(gtk.Window):
     def __init__(self):
@@ -16,7 +28,7 @@ class Penguin(gtk.Window):
         self.resize(int(PENGUIN_X/6), int(PENGUIN_Y/6))
         self.set_gravity(gtk.gdk.GRAVITY_SOUTH_EAST)
         self.width, self.height = self.get_size()
-        self.move(gtk.gdk.screen_width() - self.width, gtk.gdk.screen_height() - self.height)
+        self.move(gtk.gdk.screen_width() - self.width-SCROLL_OFFSET, gtk.gdk.screen_height() - self.height)
         screen = self.get_screen()
         rgba = screen.get_rgba_colormap()
         self.set_colormap(rgba)
@@ -28,7 +40,7 @@ class Penguin(gtk.Window):
         self.connect("button-press-event", self.click_handler)
         self.connect('window-state-event', self.window_state_event_handler)
         self.show_all()
-        self.create_options_bubble()
+        self.create_bubble()
         self.alert = None
         self.create_alert("Welcome! Click on me if you need any HALP! :)")
         
@@ -59,12 +71,12 @@ class Penguin(gtk.Window):
         cr.scale(scalef, scalef)
         svg.render_cairo(cr)
    
-    def create_options_bubble(self):
+    def create_bubble(self):
         self.options = gtk.Window(gtk.WINDOW_POPUP)
         self.options.resize(int(SPEECH_X/2), int(SPEECH_Y/2))
         self.options.set_gravity(gtk.gdk.GRAVITY_SOUTH_EAST)
         width, height = self.options.get_size()
-        self.options.move(gtk.gdk.screen_width() - width - self.width, gtk.gdk.screen_height() - height -self.height) 
+        self.options.move(gtk.gdk.screen_width() - width - self.width-SCROLL_OFFSET, gtk.gdk.screen_height() - height -self.height) 
         screen = self.options.get_screen()
         rgba = screen.get_rgba_colormap()
         self.options.set_colormap(rgba)
@@ -73,12 +85,46 @@ class Penguin(gtk.Window):
         self.options.set_decorated(False)
         self.optionsbox = gtk.Window(gtk.WINDOW_POPUP)
         self.optionsbox.resize(int(TEXT_X/2), int(TEXT_Y/2))
-        self.optionsbox.move(gtk.gdk.screen_width() - width - self.width+int(CORNER/2), gtk.gdk.screen_height() - height -self.height+int(CORNER/2))
+        self.optionsbox.move(gtk.gdk.screen_width() - width - self.width+int(CORNER/2)-SCROLL_OFFSET, gtk.gdk.screen_height() - height -self.height+int(CORNER/2))
         self.optionsbox.set_app_paintable(True)
         self.optionsbox.set_colormap(rgba)
         self.optionsbox.set_decorated(False)
         self.optionsbox.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#ffffff'))
         self.options.show_all()
+        self.optionsbox.show_all()
+
+    def create_modes_list(self):
+        self.create_bubble()
+        self.modes = gtk.ScrolledWindow()
+        self.modes.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
+        self.modes.set_shadow_type(gtk.SHADOW_NONE)
+        
+        box  = gtk.VBox()
+        box.set_border_width(0)
+        textView = gtk.TextView()
+        textView.set_wrap_mode(gtk.WRAP_WORD)
+        textView.get_buffer().set_text("What would you like to do?")
+        box.add(textView)
+        button = create_button("Do Schtuff")
+        box.add(button)
+        button = create_button("Do Schtuff")
+        box.add(button)
+        button = create_button("Do Schtuff")
+        box.add(button)
+        button = create_button("Do Schtuff")
+        box.add(button)
+        button = create_button("Do Schtuff")
+        box.add(button)
+        button = create_button("Do Schtuff")
+        box.add(button)
+        button = create_button("Do Schtuff")
+        box.add(button)
+        button = create_button("Get outta my face", gtk.main_quit)
+        box.add(button)
+        #box.show()
+        self.modes.add_with_viewport(box)
+        
+        self.optionsbox.add(self.modes)
         self.optionsbox.show_all()
 
     def create_alert(self, text):
@@ -106,7 +152,7 @@ class Penguin(gtk.Window):
             if self.alert:
                 self.alert = None
         else:
-            self.create_options_bubble()
+            self.create_modes_list()
 
     def window_state_event_handler(self, widget, event):
         if event.changed_mask & gtk.gdk.WINDOW_STATE_ICONIFIED:
