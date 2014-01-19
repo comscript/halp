@@ -21,6 +21,13 @@ def create_button(text, callback=None):
     eb.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse("white"))
     return eb
 
+def create_label(text):
+    label = gtk.Label(text)
+    label.set_line_wrap(True)
+    eb = gtk.EventBox()
+    eb.add(label)
+    eb.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse("white"))
+    return eb
 
 class Penguin(gtk.Window):
     def __init__(self):
@@ -43,7 +50,7 @@ class Penguin(gtk.Window):
         self.create_bubble()
         self.alert = None
         self.create_alert("Welcome! Click on me if you need any HALP! :)")
-        
+        self.set_keep_above(True)
     def draw_penguin(self, widget, event):
         cr = widget.window.cairo_create()
         # Sets the operator to clear which deletes everything below where an object is drawn
@@ -101,6 +108,7 @@ class Penguin(gtk.Window):
         
         box  = gtk.VBox()
         box.set_border_width(0)
+        #label = create_label('What would you like to do?')
         textView = gtk.TextView()
         textView.set_wrap_mode(gtk.WRAP_WORD)
         textView.get_buffer().set_text("What would you like to do?")
@@ -128,6 +136,7 @@ class Penguin(gtk.Window):
         self.optionsbox.show_all()
 
     def create_alert(self, text):
+        #self.alert = create_label(text)
         self.alert = gtk.TextView()
         self.alert.set_wrap_mode(gtk.WRAP_WORD)
         self.alert.get_buffer().set_text(text)
